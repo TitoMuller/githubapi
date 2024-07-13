@@ -10,11 +10,9 @@ import (
 
 func main() {
 	// Criando um SLICE de strings chamado usernames
-	usernames := []string{"TitoMuller", "rbmuller", "octocat", "mojombo"}
-
+	usernames := []string{"TitoMuller", "rbmuller", "octocat", "mojombo", "teste", "ErickWendel"}
 	// Cria um SLICE de "User" (estudar pointers)
 	var users []*github.User
-
 	// Cria um loop que itera sobre cada elemento do SLICE usernames
 	// _ é usado como um placeholder para o índice (estudar)
 	// Pra cada iteração, chama a funcao ExcractUserData e armazena o resultado na variavel userData
@@ -25,18 +23,36 @@ func main() {
 			users = append(users, userData)
 		}
 	}
-
 	// Chama a funcao saveJSON, criando o nome de arquivo definido na chamado
 	// Passa como data o conteudo de users, que é o resultado do loop for
 	saveJSON("user_data.json", users)
 
+	organizations := []string{"github", "test"}
+	var orgs []*github.Organization
+	for _, organization := range organizations {
+		orgData := github.ExtractOrgData(organization)
+		if orgData != nil {
+			orgs = append(orgs, orgData)
+		}
+	}
 	// Extrair dados de organizacao, parametro = orgname
-	orgData := github.ExtractOrgData("github")
-	saveJSON("org_data.json", orgData)
+	saveJSON("org_data.json", orgs)
 
 	// Extrair dados de repositorio, parametro = username, repo
-	repoData := github.ExtractRepoData("TitoMuller", "golangulator")
-	saveJSON("repo_data.json", repoData)
+	repositories := []github.RepositoryParameters{
+		{Owner: "TitoMuller", Repo: "golangulator"},
+		{Owner: "rbmuller", Repo: "devTools"},
+		{Owner: "ErickWendel", Repo: "fingerpose"},
+	}
+	var repos []*github.Repository
+	for _, repository := range repositories {
+		repoData := github.ExtractRepoData(repository.Owner, repository.Repo)
+		if repoData != nil {
+			repos = append(repos, repoData)
+		}
+	}
+
+	saveJSON("repo_data.json", repos)
 
 	fmt.Println("Dados extraídos e salvos localmente.")
 }

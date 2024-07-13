@@ -10,6 +10,7 @@ import (
 type User struct {
 	Login     string `json:"login"`
 	ID        int    `json:"id"`
+	HtmlUrl   string `json:"html_url"`
 	AvatarURL string `json:"avatar_url"`
 }
 

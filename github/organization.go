@@ -12,6 +12,7 @@ type Organization struct {
 	Login       string `json:"login"`
 	ID          int    `json:"id"`
 	Description string `json:"description"`
+	Repos       string `json:"repos_url"`
 }
 
 func ExtractOrgData(orgname string) *Organization {

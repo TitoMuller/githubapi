@@ -7,11 +7,19 @@ import (
 	"net/http"
 )
 
+// Struct pra poder fazer o loop no main.go
+type RepositoryParameters struct {
+	Owner string
+	Repo  string
+}
+
 // Estrutura para dados de um repositório
 type Repository struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	FullName    string `json:"full_name"`
+	HtmlUrl     string `json:"html_url"`
 }
 
 func ExtractRepoData(owner, repo string) *Repository {
