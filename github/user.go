@@ -1,6 +1,7 @@
 package github
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -41,4 +42,20 @@ func ExtractUserData(username string) *User {
 	}
 
 	return &userData
+}
+
+func ConvertUsersToCSV(jsonData []byte, writer *csv.Writer) error {
+	var users []*User
+	err := json.Unmarshal(jsonData, &users)
+	if err != nil {
+		return fmt.Errorf("erro ao decodificar JSON: %w", err)
+	}
+
+	writer.Write([]string{"Login", "ID", "URL", "Avatar URL"})
+
+	for _, user := range users {
+		writer.Write([]string{user.Login, fmt.Sprint(user.ID), user.HtmlUrl, user.AvatarURL})
+	}
+
+	return nil
 }

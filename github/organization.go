@@ -1,6 +1,7 @@
 package github
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -38,4 +39,20 @@ func ExtractOrgData(orgname string) *Organization {
 	}
 
 	return &orgData
+}
+
+func ConvertOrganizationsToCSV(jsonData []byte, writer *csv.Writer) error {
+	var orgs []*Organization
+	err := json.Unmarshal(jsonData, &orgs)
+	if err != nil {
+		return fmt.Errorf("erro ao decodificar JSON: %w", err)
+	}
+
+	writer.Write([]string{"Login", "ID", "Description", "Repos"})
+
+	for _, org := range orgs {
+		writer.Write([]string{org.Login, fmt.Sprint(org.ID), org.Description, org.Repos})
+	}
+
+	return nil
 }

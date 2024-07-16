@@ -1,6 +1,7 @@
 package github
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -45,4 +46,20 @@ func ExtractRepoData(owner, repo string) *Repository {
 	}
 
 	return &repoData
+}
+
+func ConvertRepositoriesToCSV(jsonData []byte, writer *csv.Writer) error {
+	var repos []*Repository
+	err := json.Unmarshal(jsonData, &repos)
+	if err != nil {
+		return fmt.Errorf("erro ao decodificar JSON: %w", err)
+	}
+
+	writer.Write([]string{"ID", "Name", "Description", "Full name", "URL"})
+
+	for _, repo := range repos {
+		writer.Write([]string{fmt.Sprint(repo.ID), repo.Name, repo.Description, repo.FullName, repo.HtmlUrl})
+	}
+
+	return nil
 }
