@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 )
 
 // Estrutura para dados de uma organização
@@ -16,9 +17,25 @@ type Organization struct {
 	Repos       string `json:"repos_url"`
 }
 
+// Função para extrair dados de uma organizacao
 func ExtractOrgData(orgname string) *Organization {
 	orgURL := fmt.Sprintf("https://api.github.com/orgs/%s", orgname)
-	resp, err := http.Get(orgURL)
+	req, err := http.NewRequest("GET", orgURL, nil)
+	if err != nil {
+		fmt.Println("Erro ao criar requisição:", err)
+		return nil
+	}
+
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		fmt.Println("Token não encontrado")
+		return nil
+	}
+
+	req.Header.Set("Authorization", "token "+token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Erro ao fazer requisição:", err)
 		return nil
@@ -41,6 +58,19 @@ func ExtractOrgData(orgname string) *Organization {
 	return &orgData
 }
 
+// Funcao para extrair multiplas organizacoes
+func ExtractMultipleOrgs(organizations []string) []*Organization {
+	var orgs []*Organization
+	for _, organization := range organizations {
+		orgData := ExtractOrgData(organization)
+		if orgData != nil {
+			orgs = append(orgs, orgData)
+		}
+	}
+	return orgs
+}
+
+// Converte os dados para CSV
 func ConvertOrganizationsToCSV(jsonData []byte, writer *csv.Writer) error {
 	var orgs []*Organization
 	err := json.Unmarshal(jsonData, &orgs)

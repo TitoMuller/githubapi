@@ -6,8 +6,14 @@ This project is a Go application that extracts data from the GitHub API and save
 * Save extracted data in JSON format.
 * Convert JSON data to CSV format for easier analysis.
 
+### How to test it
+
+Before running the main.go file, you need to set a environment variable with your own GITHUB token
+
+* For Linux/MacOS: export GITHUB_TOKEN=your_token_here
+* For Windows: set GITHUB_TOKEN=your_token_here
+
 ### TO DO
-* GitHub Personal Access Token, to avoid rate limits.
 * Append new data to existing CSV files without overwriting.
 
 ## Author

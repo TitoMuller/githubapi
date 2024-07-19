@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 )
 
 type User struct {
@@ -16,18 +17,30 @@ type User struct {
 }
 
 // Função para extrair dados de um usuário
-// username string = parametro       -      *User = retorna um ponteiro para uma struct User
 func ExtractUserData(username string) *User {
 	userURL := fmt.Sprintf("https://api.github.com/users/%s", username)
-	resp, err := http.Get(userURL)
+	req, err := http.NewRequest("GET", userURL, nil)
 	if err != nil {
 		fmt.Println("Erro ao fazer requisição:", err)
 		return nil
 	}
 
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		fmt.Println("Token não encontrado")
+		return nil
+	}
+
+	req.Header.Set("Authorization", "token "+token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Erro ao fazer requisicao:", err)
+		return nil
+	}
 	defer resp.Body.Close()
 
-	// Cria uma variavel do tipo User
 	var userData User
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -44,6 +57,19 @@ func ExtractUserData(username string) *User {
 	return &userData
 }
 
+// Extrair multiplos users
+func ExtractMultipleUsers(usernames []string) []*User {
+	var users []*User
+	for _, username := range usernames {
+		userData := ExtractUserData(username)
+		if userData != nil {
+			users = append(users, userData)
+		}
+	}
+	return users
+}
+
+// Converte os dados para CSV
 func ConvertUsersToCSV(jsonData []byte, writer *csv.Writer) error {
 	var users []*User
 	err := json.Unmarshal(jsonData, &users)

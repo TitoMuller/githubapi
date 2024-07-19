@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 )
 
-// Struct pra poder fazer o loop no main.go
+// Struct pra poder fazer o loop
 type RepositoryParameters struct {
 	Owner string
 	Repo  string
@@ -23,9 +24,25 @@ type Repository struct {
 	HtmlUrl     string `json:"html_url"`
 }
 
+// Função para extrair dados de um repositorio
 func ExtractRepoData(owner, repo string) *Repository {
 	repoURL := fmt.Sprintf("https://api.github.com/repos/%s/%s", owner, repo)
-	resp, err := http.Get(repoURL)
+	req, err := http.NewRequest("GET", repoURL, nil)
+	if err != nil {
+		fmt.Println("Erro ao criar requisição:", err)
+		return nil
+	}
+
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		fmt.Println("Token não encontrado")
+		return nil
+	}
+
+	req.Header.Set("Authorization", "token "+token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Erro ao fazer requisição:", err)
 		return nil
@@ -48,6 +65,19 @@ func ExtractRepoData(owner, repo string) *Repository {
 	return &repoData
 }
 
+// Extrair multiplos repostirios
+func ExtractMultipleRepos(repositories []RepositoryParameters) []*Repository {
+	var repos []*Repository
+	for _, repository := range repositories {
+		repoData := ExtractRepoData(repository.Owner, repository.Repo)
+		if repoData != nil {
+			repos = append(repos, repoData)
+		}
+	}
+	return repos
+}
+
+// Converte os dados para CSV
 func ConvertRepositoriesToCSV(jsonData []byte, writer *csv.Writer) error {
 	var repos []*Repository
 	err := json.Unmarshal(jsonData, &repos)
